@@ -178,7 +178,7 @@ public class FluidUtil {
         if (notAdded == null || notAdded.getStackSize() <= 0) {
             return drained.getRight();
         }
-        if (!notAdded.getFluid().equals(fluidStack.getFluid())) {
+        if (notAdded.getFluid() != fluidStack.getFluid()) {
             FMLLog.severe(
                     "[ExtraCells2] ME network returned fluid `%s` when injecting `%s`",
                     notAdded.getFluid().getName(), fluidStack.getUnlocalizedName());
@@ -190,6 +190,7 @@ public class FluidUtil {
                     notAdded.getStackSize(), fluidStack.getUnlocalizedName(), fluidStack.amount);
             return null;
         }
+        if (notAdded.getStackSize() == fluidStack.amount) return null;
         fluidStack.amount -= (int) notAdded.getStackSize();
         MutablePair<Integer, ItemStack> partiallyDrained = FluidUtil.drainStack(container.copy(), fluidStack);
         if (partiallyDrained.getLeft() > fluidStack.amount) {

@@ -65,8 +65,7 @@ public class PartFluidTerminal extends PartECBase implements IGridTickable, IInv
     @Override
     public void getDrops(List<ItemStack> drops, boolean wrenched) {
         for (ItemStack stack : inventory.slots) {
-            if (stack == null) continue;
-            drops.add(stack);
+            if (stack != null) drops.add(stack);
         }
     }
 

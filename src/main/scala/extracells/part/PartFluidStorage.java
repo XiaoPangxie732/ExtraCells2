@@ -3,6 +3,7 @@ package extracells.part;
 import appeng.api.AEApi;
 import appeng.api.config.AccessRestriction;
 import appeng.api.config.SecurityPermissions;
+import appeng.api.definitions.IItemDefinition;
 import appeng.api.networking.IGrid;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.events.*;
@@ -31,10 +32,7 @@ import extracells.render.TextureManager;
 import extracells.util.PermissionUtil;
 import extracells.util.inventory.ECPrivateInventory;
 import extracells.util.inventory.IInventoryUpdateReceiver;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
@@ -49,6 +47,8 @@ import net.minecraftforge.fluids.FluidRegistry;
 public class PartFluidStorage extends PartECBase
         implements ICellContainer, IInventoryUpdateReceiver, IFluidSlotPartOrBlock, IPriorityHost {
 
+    private static final IItemDefinition inverter =
+            AEApi.instance().definitions().materials().cardInverter();
     private final HashMap<IAEFluidStack, Long> fluidList = new HashMap<IAEFluidStack, Long>();
     private int priority = 0;
     protected HandlerPartStorageFluid handler = new HandlerPartStorageFluid(this);
@@ -58,16 +58,14 @@ public class PartFluidStorage extends PartECBase
 
         @Override
         public boolean isItemValidForSlot(int i, ItemStack itemStack) {
-            return itemStack != null
-                    && AEApi.instance().definitions().materials().cardInverter().isSameAs(itemStack);
+            return itemStack != null && inverter.isSameAs(itemStack);
         }
     };
 
     @Override
     public void getDrops(List<ItemStack> drops, boolean wrenched) {
         for (ItemStack stack : upgradeInventory.slots) {
-            if (stack == null) continue;
-            drops.add(stack);
+            if (stack != null) drops.add(stack);
         }
     }
 
@@ -88,12 +86,8 @@ public class PartFluidStorage extends PartECBase
 
     @Override
     public List<IMEInventoryHandler> getCellArray(StorageChannel channel) {
-        List<IMEInventoryHandler> list = new ArrayList<IMEInventoryHandler>();
-        if (channel == StorageChannel.FLUIDS) {
-            list.add(this.handler);
-        }
         updateNeighborFluids();
-        return list;
+        return channel == StorageChannel.FLUIDS ? Collections.singletonList(this.handler) : Collections.emptyList();
     }
 
     @Override
@@ -138,11 +132,7 @@ public class PartFluidStorage extends PartECBase
 
     @Override
     public void onInventoryChanged() {
-        this.handler.setInverted(AEApi.instance()
-                .definitions()
-                .materials()
-                .cardInverter()
-                .isSameAs(this.upgradeInventory.getStackInSlot(0)));
+        this.handler.setInverted(inverter.isSameAs(this.upgradeInventory.getStackInSlot(0)));
         saveData();
     }
 
